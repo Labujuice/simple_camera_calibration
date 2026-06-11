@@ -34,6 +34,8 @@ class CornerTracker:
 def main():
     parser = argparse.ArgumentParser(description="Real-time Camera Calibration Tool")
     parser.add_argument("--camera", type=int, default=0, help="Webcam index (default: 0)")
+    parser.add_argument("--width", type=int, default=0, help="Optional: Target webcam resolution width (e.g. 1920)")
+    parser.add_argument("--height", type=int, default=0, help="Optional: Target webcam resolution height (e.g. 1080)")
     parser.add_argument("--model", type=str, default="pinhole", choices=["pinhole", "fisheye"], help="Camera model (default: pinhole)")
     parser.add_argument("--output", type=str, default="camera_calibration.yaml", help="Output calibration file (default: camera_calibration.yaml)")
     parser.add_argument("--rows", type=int, default=7, help="Default squares rows (if QR code not scanned)")
@@ -155,7 +157,20 @@ def main():
         print("Tip: If you don't have a webcam, you can run offline calibration using pre-captured images by specifying '--images <directory>'")
         return
         
-    print("Camera opened successfully. Starting real-time calibration...")
+    # Configure custom resolution if requested
+    if args.width > 0:
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, args.width)
+    if args.height > 0:
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
+        
+    # Get actual frame dimensions
+    ret, frame = cap.read()
+    if not ret:
+        print("Error: Could not read frame from camera.")
+        return
+    H, W = frame.shape[:2]
+    
+    print(f"Camera opened successfully. Actual resolution: {W}x{H}")
     print("Instructions:")
     print("  1. Show the QR code to the camera first to automatically load configuration (optional).")
     print("  2. Move the chessboard corners to cover all cells of the grid.")
@@ -163,13 +178,7 @@ def main():
     print("  4. Press 'c' to force calibration immediately, 'r' to reset progress, 'q' to quit.")
     
     cv2.namedWindow("Camera Calibration - Antigravity", cv2.WINDOW_NORMAL)
-    
-    # Get frame dimensions
-    ret, frame = cap.read()
-    if not ret:
-        print("Error: Could not read frame from camera.")
-        return
-    H, W = frame.shape[:2]
+    print("Starting real-time calibration...")
     
     while True:
         ret, frame = cap.read()
@@ -340,9 +349,19 @@ def run_calibration(objpoints, imgpoints, size, model, output_path):
     W, H = size
     print(f"Calibrating using {len(objpoints)} frames...")
     
+    # Initial guess for camera matrix (focal length ~ max(W, H), center ~ W/2, H/2)
+    f_init = max(W, H)
+    mtx = np.array([
+        [f_init, 0.0, W / 2.0],
+        [0.0, f_init, H / 2.0],
+        [0.0, 0.0, 1.0]
+    ], dtype=np.float64)
+    
     if model == "pinhole":
+        dist = np.zeros((5, 1), dtype=np.float64)
+        flags = cv2.CALIB_USE_INTRINSIC_GUESS
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
-            objpoints, imgpoints, (W, H), None, None
+            objpoints, imgpoints, (W, H), mtx, dist, flags=flags
         )
         rms = ret
     else: # fisheye
@@ -350,11 +369,10 @@ def run_calibration(objpoints, imgpoints, size, model, output_path):
         objpoints_fe = [np.array(op, dtype=np.float64).reshape(-1, 1, 3) for op in objpoints]
         imgpoints_fe = [np.array(ip, dtype=np.float64).reshape(-1, 1, 2) for ip in imgpoints]
         
-        mtx = np.zeros((3, 3), dtype=np.float64)
         dist = np.zeros((4, 1), dtype=np.float64)
         rvecs = []
         tvecs = []
-        flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC + cv2.fisheye.CALIB_FIX_SKEW
+        flags = cv2.fisheye.CALIB_USE_INTRINSIC_GUESS + cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC + cv2.fisheye.CALIB_FIX_SKEW
         
         ret, mtx, dist, rvecs, tvecs = cv2.fisheye.calibrate(
             objpoints_fe, imgpoints_fe, (W, H), mtx, dist, rvecs, tvecs, flags

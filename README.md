@@ -46,11 +46,14 @@ python3 generate_chessboard.py --rows 7 --cols 8 --size 20.0 --output calibratio
 ### 步驟 2. 進行相機校正
 啟動 Webcam 進行即時校正：
 ```bash
-# Pinhole (一般鏡頭)
+# Pinhole (一般鏡頭，預設 640x480)
 python3 calibrate.py --model pinhole --output camera_calibration.yaml
 
 # Fisheye (廣角/魚眼鏡頭)
 python3 calibrate.py --model fisheye --output camera_calibration.yaml
+
+# 指定相機解析度（如 1080p）
+python3 calibrate.py --model fisheye --width 1920 --height 1080 --output camera_calibration.yaml
 ```
 
 *   **掃描 QR Code**：將圖紙的 QR Code 對準鏡頭，程式會自動讀取規格。
