@@ -7,6 +7,7 @@ import time
 import yaml
 import cv2
 import numpy as np
+from camera_model import select_camera_and_resolution
 
 class CornerTracker:
     def __init__(self, history_len=3):
@@ -33,7 +34,7 @@ class CornerTracker:
 
 def main():
     parser = argparse.ArgumentParser(description="Real-time Camera Calibration Tool")
-    parser.add_argument("--camera", type=int, default=0, help="Webcam index (default: 0)")
+    parser.add_argument("--camera", type=int, default=None, help="Webcam index. If not specified, a selection menu will be shown.")
     parser.add_argument("--width", type=int, default=0, help="Optional: Target webcam resolution width (e.g. 1920)")
     parser.add_argument("--height", type=int, default=0, help="Optional: Target webcam resolution height (e.g. 1080)")
     parser.add_argument("--model", type=str, default="pinhole", choices=["pinhole", "fisheye"], help="Camera model (default: pinhole)")
@@ -151,17 +152,26 @@ def main():
         return
 
     # Real-time calibration using webcam
-    cap = cv2.VideoCapture(args.camera)
+    if args.camera is None:
+        camera_info = select_camera_and_resolution(default_w=args.width, default_h=args.height)
+        if camera_info is None:
+            return
+        camera_index, target_w, target_h = camera_info
+    else:
+        camera_index = args.camera
+        target_w, target_h = args.width, args.height
+
+    cap = cv2.VideoCapture(camera_index)
     if not cap.isOpened():
-        print(f"Error: Could not open camera with index {args.camera}")
+        print(f"Error: Could not open camera with index {camera_index}")
         print("Tip: If you don't have a webcam, you can run offline calibration using pre-captured images by specifying '--images <directory>'")
         return
         
     # Configure custom resolution if requested
-    if args.width > 0:
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, args.width)
-    if args.height > 0:
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
+    if target_w > 0:
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, target_w)
+    if target_h > 0:
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, target_h)
         
     # Get actual frame dimensions
     ret, frame = cap.read()

@@ -4,7 +4,7 @@ import os
 import glob
 import numpy as np
 import cv2
-from camera_model import CameraModel
+from camera_model import CameraModel, select_camera
 
 # Global variables for mouse tracking
 mouse_u = 0
@@ -108,7 +108,7 @@ def on_mouse(event, x, y, flags, param):
 def main():
     parser = argparse.ArgumentParser(description="Calibration Verification & Demo Program")
     parser.add_argument("--calibration", type=str, default="camera_calibration.yaml", help="Path to calibration YAML (default: camera_calibration.yaml)")
-    parser.add_argument("--camera", type=int, default=0, help="Webcam index (default: 0)")
+    parser.add_argument("--camera", type=int, default=None, help="Webcam index. If not specified, a selection menu will be shown.")
     parser.add_argument("--images", type=str, default="", help="Optional: Directory containing images to verify offline")
     parser.add_argument("--image", type=str, default="", help="Optional: Path to a single image to verify offline")
     
@@ -154,9 +154,16 @@ def main():
         is_static = True
     else:
         # Camera
-        cap = cv2.VideoCapture(args.camera)
+        if args.camera is None:
+            camera_index = select_camera()
+            if camera_index is None:
+                return
+        else:
+            camera_index = args.camera
+
+        cap = cv2.VideoCapture(camera_index)
         if not cap.isOpened():
-            print(f"Error: Could not open camera with index {args.camera}")
+            print(f"Error: Could not open camera with index {camera_index}")
             print("Tip: You can verify using a saved image by specifying '--image <path>' or '--images <dir>'")
             return
         

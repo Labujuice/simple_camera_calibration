@@ -95,4 +95,90 @@ class CameraModel:
             self.init_rectification_maps()
         return cv2.remap(img, self.map1, self.map2, cv2.INTER_LINEAR)
 
+def select_camera(max_tested=8):
+    """
+    Scans for available camera devices, lists them, and prompts the user to select one.
+    If only one is found, it selects it automatically.
+    Returns the camera index (int), or None if aborted or no cameras found.
+    """
+    print("Scanning for available camera devices...")
+    available = []
+    for i in range(max_tested):
+        cap = cv2.VideoCapture(i)
+        if cap.isOpened():
+            ret, frame = cap.read()
+            if ret:
+                h, w = frame.shape[:2]
+                available.append((i, w, h))
+            cap.release()
+            
+    if not available:
+        print("Error: No available camera devices found.")
+        return None
+        
+    if len(available) == 1:
+        idx, w, h = available[0]
+        print(f"Found 1 camera: Index {idx} ({w}x{h}). Using it automatically.")
+        return idx
+        
+    print("\nAvailable camera devices:")
+    for idx, (c_idx, w, h) in enumerate(available):
+        print(f"  [{idx}] Camera Index {c_idx} (Default Resolution: {w}x{h})")
+        
+    while True:
+        try:
+            choice = input(f"Select a camera [0-{len(available)-1}] (default 0): ").strip()
+            if choice == "":
+                return available[0][0]
+            choice_idx = int(choice)
+            if 0 <= choice_idx < len(available):
+                return available[choice_idx][0]
+            else:
+                print(f"Invalid selection. Enter a number between 0 and {len(available)-1}.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+        except (KeyboardInterrupt, SystemExit):
+            print("\nCamera selection aborted.")
+            return None
+
+def select_camera_and_resolution(max_tested=8, default_w=0, default_h=0):
+    """
+    Scans for cameras, prompts user to select one, and then prompts for target resolution if not specified.
+    Returns (camera_index, width, height) or None.
+    """
+    camera_index = select_camera(max_tested)
+    if camera_index is None:
+        return None
+        
+    # If resolution is already specified on command line, use it
+    if default_w > 0 and default_h > 0:
+        return camera_index, default_w, default_h
+        
+    print("\nSelect target resolution:")
+    print("  [0] Camera Default")
+    print("  [1] 1280x720 (HD / 720p)")
+    print("  [2] 1920x1080 (Full HD / 1080p)")
+    print("  [3] Custom resolution...")
+    
+    while True:
+        try:
+            res_choice = input("Select resolution [0-3] (default 0): ").strip()
+            if res_choice == "" or res_choice == "0":
+                return camera_index, 0, 0
+            elif res_choice == "1":
+                return camera_index, 1280, 720
+            elif res_choice == "2":
+                return camera_index, 1920, 1080
+            elif res_choice == "3":
+                w_str = input("Enter target width: ").strip()
+                h_str = input("Enter target height: ").strip()
+                return camera_index, int(w_str), int(h_str)
+            else:
+                print("Invalid selection. Please enter a number between 0 and 3.")
+        except ValueError:
+            print("Invalid input. Please enter numbers for custom width/height.")
+        except (KeyboardInterrupt, SystemExit):
+            print("\nResolution selection aborted.")
+            return None
+
 import os

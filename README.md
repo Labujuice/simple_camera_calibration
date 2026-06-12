@@ -59,6 +59,7 @@ python3 calibrate.py --model fisheye --output camera_calibration.yaml
 python3 calibrate.py --model fisheye --width 1920 --height 1080 --output camera_calibration.yaml
 ```
 
+*   **相機與解析度選擇選單**：若執行時未指定 `--camera` 參數，程式會先引導您選擇鏡頭，接著詢問要使用的解析度（提供預設、720p、1080p 或自訂解析度選單）。若已在命令列指定 `--width` 與 `--height`，則會自動套用該解析度而不重複詢問。
 *   **自動配置參數**：將圖紙左側的 **QR Code 對準鏡頭**，校正程式會自動解析並加載棋盤格的尺寸與行列數，無須手動設定。
 *   **網格覆蓋導引**：畫面會被均勻劃分網格，移動圖紙使棋盤格中心經過每個網格，成功採樣的格子會轉為**綠色半透明**。
 *   **防震動自動捕捉**：當程式偵測到棋盤格靜止約 0.5 秒後，會發出成功採樣提示並記錄該幀，避免晃動造成的動態模糊。
