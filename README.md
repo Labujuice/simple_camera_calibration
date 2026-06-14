@@ -10,8 +10,11 @@
 camera_angle_calibration/
 ├── generate_chessboard.py  # 步驟 1: 生成黑白棋盤格 PDF 圖紙（帶 QR Code 與尺規）
 ├── calibrate.py            # 步驟 2: 即時/離線相機校正程式（帶網格覆蓋導引與自動抓取）
-├── verify.py               # 步驟 3: 雙畫面對照與滑鼠懸停角度顯示驗證程式
-├── camera_model.py         # 核心庫: 提供外部專案導入使用的 CameraModel 類別
+├── verify.py               # 步驟 3: Python 雙畫面對照與滑鼠懸停角度顯示驗證程式
+├── camera_model.py         # Python 核心庫: 提供外部專案導入使用的 CameraModel 類別
+├── calibration_transforms/ # C/C++ 雙向角度/像素轉換程式與驗證程式
+│   ├── c/                  # C 語言版（純 C 數學轉換核心 + OpenCV GUI 包裝）
+│   └── cpp/                # C++ 語言版（物件導向設計 + OpenCV 直接載入與轉換）
 ├── Calibration_Methodology.md # 技術文件: 座標系定義、投影與畸變校正的詳細數學公式
 ├── Requirement.md          # 專案原始開發需求文件與開發進度
 └── README.md               # 本說明文件
@@ -147,6 +150,43 @@ distortion_coefficients: # 畸變參數
   cols: 5 # 針孔為 5 個參數 [k1, k2, p1, p2, k3]，魚眼為 4 個參數 [k1, k2, k3, k4]
   data: [k1, k2, p1, p2, k3]
 ```
+
+---
+
+## 💻 C/C++ 整合開發與驗證指南 (C/C++ Integration & Verification Guide)
+
+本專案在 `calibration_transforms/` 資料夾下，為 C 與 C++ 語言分別提供了獨立的座標/角度轉換模組與視窗驗證程式。
+
+### 核心設計亮點
+1. **目錄分開放置**：C 語言位於 [c/](file:///home/kenny/Git_KennySpace/camera_angle_calibration/calibration_transforms/c)；C++ 語言位於 [cpp/](file:///home/kenny/Git_KennySpace/camera_angle_calibration/calibration_transforms/cpp)。
+2. **雙向精準轉換**：不依賴 OpenCV Math 函數，核心數學計算（包含針孔/魚眼的投影與迭代法去畸變）使用標準 C 寫成，適合移植至嵌入式 MCU。
+3. **無記憶體洩漏**：全面實現建構與解構的資源配對設計（C++ 類別解構子，C 語言 `create` / `destroy` 函數配對），確保重複執行不會造成記憶體累積。
+4. **同等驗證程式**：使用 OpenCV 提供與 Python 相同的雙畫面聯動滑鼠懸停顯示與角度格線疊加功能。
+5. **支援自訂 YAML 檔案**：可透過參數 `--calibration` 載入任意校正結果檔。
+
+### 編譯與執行方法
+
+#### 1. C 語言版本 (Pure C core + C++ OpenCV GUI wrapper)
+*   **API 使用說明**：
+    包含 [camera_calibration.h](file:///home/kenny/Git_KennySpace/camera_angle_calibration/calibration_transforms/c/camera_calibration.h) 以呼叫相關函數。
+*   **編譯與執行**：
+    ```bash
+    cd calibration_transforms/c
+    make
+    # 執行驗證程式 (預設讀取 camera_calibration.yaml，亦可透過 --image 讀取測試圖檔)
+    ./verify_c --calibration ../../camera_calibration.yaml --image ../../test_image.png
+    ```
+
+#### 2. C++ 語言版本 (C++ Object-Oriented)
+*   **API 使用說明**：
+    包含 [CameraCalibration.hpp](file:///home/kenny/Git_KennySpace/camera_angle_calibration/calibration_transforms/cpp/CameraCalibration.hpp) 並實例化 `CameraCalibration` 類別。
+*   **編譯與執行**：
+    ```bash
+    cd calibration_transforms/cpp
+    make
+    # 執行驗證程式
+    ./verify_cpp --calibration ../../camera_calibration.yaml --image ../../test_image.png
+    ```
 
 ---
 

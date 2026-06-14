@@ -39,3 +39,34 @@
 - [x] 校正流程程式撰寫
 - [x] 驗證程式撰寫
 - [x] Readme.md 撰寫
+- [x] C/C++ 轉換程式開發 (資料夾分開放置)
+- [x] C/C++ 雙向角度/像素轉換數學公式實現
+- [x] C/C++ 記憶體安全管理（建構與解構釋放機制）
+- [x] C/C++ 視窗驗證程式與 OpenCV 即時去畸變顯示
+
+## C/C++ 系統編譯與執行需求 (Requirements)
+- **編譯器與工具**:
+  - GCC (支援 C99 標準備)
+  - G++ (支援 C++11 或以上標準)
+  - GNU Make
+- **第三方相依套件**:
+  - **OpenCV 4.x** (C++ 開發包與動態連結庫)
+  - `pkg-config` (用於自動定位 OpenCV 標頭檔與程式庫路徑)
+- **相依安裝指令 (Ubuntu/Debian 系統)**:
+  ```bash
+  sudo apt-get update
+  sudo apt-get install build-essential libopencv-dev pkg-config
+  ```
+- **執行方式**:
+  - **C 語言版**:
+    ```bash
+    cd calibration_transforms/c
+    make
+    ./verify_c --calibration ../../camera_calibration.yaml --image ../../test_image.png
+    ```
+  - **C++ 語言版**:
+    ```bash
+    cd calibration_transforms/cpp
+    make
+    ./verify_cpp --calibration ../../camera_calibration.yaml --image ../../test_image.png
+    ```
