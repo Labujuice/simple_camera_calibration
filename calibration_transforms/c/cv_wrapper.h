@@ -42,6 +42,7 @@ void cv_wrapper_remap(const CvImage* src, CvImage* dst, const void* map1, const 
 
 // Window and GUI
 void cv_wrapper_named_window(const char* name);
+void cv_wrapper_resize_window(const char* name, int width, int height);
 void cv_wrapper_imshow(const char* name, const CvImage* img);
 int cv_wrapper_wait_key(int delay);
 void cv_wrapper_destroy_all_windows(void);

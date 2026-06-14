@@ -285,6 +285,7 @@ int main(int argc, char* argv[]) {
     
     const char* window_name = "Calibration Verification (C)";
     cv_wrapper_named_window(window_name);
+    cv_wrapper_resize_window(window_name, img_w, img_h / 2);
     
     MouseParams m_params = { img_w, img_h };
     cv_wrapper_set_mouse_callback(window_name, on_mouse, &m_params);

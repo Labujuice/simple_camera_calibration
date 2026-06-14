@@ -157,6 +157,10 @@ void cv_wrapper_named_window(const char* name) {
     cv::namedWindow(name, cv::WINDOW_NORMAL);
 }
 
+void cv_wrapper_resize_window(const char* name, int width, int height) {
+    cv::resizeWindow(name, width, height);
+}
+
 void cv_wrapper_imshow(const char* name, const CvImage* img) {
     if (img) {
         cv::imshow(name, img->mat);

@@ -275,6 +275,7 @@ int main(int argc, char* argv[]) {
     
     std::string window_name = "Calibration Verification (C++)";
     cv::namedWindow(window_name, cv::WINDOW_NORMAL);
+    cv::resizeWindow(window_name, img_w, img_h / 2);
     
     MouseParams m_params = { img_w, img_h };
     cv::setMouseCallback(window_name, on_mouse, &m_params);
