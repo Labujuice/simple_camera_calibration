@@ -226,3 +226,9 @@ int main() {
 ## 📐 數學模型與座標系參考
 詳細的投影投影矩陣公式、針孔/魚眼畸變校正公式以及 Yaw & Pitch 的物理映射關係，請參閱專案文件：
 👉 [Calibration_Methodology.md](file:///home/kenny/Git_KennySpace/camera_angle_calibration/Calibration_Methodology.md)
+
+---
+
+## 📄 授權條款 (License)
+本專案採用 [MIT License](file:///home/kenny/Git_KennySpace/camera_angle_calibration/LICENSE) 授權。
+
