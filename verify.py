@@ -174,7 +174,6 @@ def main():
     # Window setup
     window_name = "Calibration Verification - Antigravity"
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(window_name, W, H // 2)
     
     # Mouse callback registration parameters
     # We will get frame dimensions from the first frame/image
@@ -188,6 +187,7 @@ def main():
             return
         H, W = test_frame.shape[:2]
         
+    cv2.resizeWindow(window_name, W, H // 2)
     cv2.setMouseCallback(window_name, on_mouse, {"width": W, "height": H})
     
     show_grid = True
