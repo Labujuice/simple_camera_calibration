@@ -199,7 +199,10 @@ void cv_wrapper_set_mouse_callback(const char* name, CvMouseCallback callback, v
 // VideoCapture
 CvCapture* cv_wrapper_capture_open(int index) {
     CvCapture* cap = new CvCapture();
-    cap->cap.open(index);
+    cap->cap.open(index, cv::CAP_V4L2);
+    if (!cap->cap.isOpened()) {
+        cap->cap.open(index, cv::CAP_ANY);
+    }
     if (!cap->cap.isOpened()) {
         delete cap;
         return NULL;

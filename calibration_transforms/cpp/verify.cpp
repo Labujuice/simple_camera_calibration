@@ -161,9 +161,17 @@ static int select_camera(void) {
     std::cout << "Scanning for available camera devices..." << std::endl;
     std::vector<int> available;
     for (int i = 0; i < 8; i++) {
-        cv::VideoCapture cap(i);
+        cv::VideoCapture cap;
+        cap.open(i, cv::CAP_V4L2);
+        if (!cap.isOpened()) {
+            cap.open(i, cv::CAP_ANY);
+        }
         if (cap.isOpened()) {
-            available.push_back(i);
+            cv::Mat frame;
+            cap >> frame;
+            if (!frame.empty()) {
+                available.push_back(i);
+            }
             cap.release();
         }
     }
@@ -254,7 +262,10 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
         }
-        cap.open(camera_index);
+        cap.open(camera_index, cv::CAP_V4L2);
+        if (!cap.isOpened()) {
+            cap.open(camera_index, cv::CAP_ANY);
+        }
         if (!cap.isOpened()) {
             std::cerr << "Error: Could not open camera with index " << camera_index << std::endl;
             delete model;

@@ -168,7 +168,11 @@ static int select_camera(void) {
     for (int i = 0; i < 8; i++) {
         CvCapture* cap = cv_wrapper_capture_open(i);
         if (cap) {
-            available[count++] = i;
+            CvImage* test_frame = cv_wrapper_image_create_empty();
+            if (cv_wrapper_capture_read(cap, test_frame)) {
+                available[count++] = i;
+            }
+            cv_wrapper_image_free(test_frame);
             cv_wrapper_capture_close(cap);
         }
     }
