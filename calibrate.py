@@ -369,7 +369,7 @@ def run_calibration(objpoints, imgpoints, size, model, output_path):
     
     if model == "pinhole":
         dist = np.zeros((5, 1), dtype=np.float64)
-        flags = cv2.CALIB_USE_INTRINSIC_GUESS
+        flags = cv2.CALIB_USE_INTRINSIC_GUESS | cv2.CALIB_FIX_PRINCIPAL_POINT
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
             objpoints, imgpoints, (W, H), mtx, dist, flags=flags
         )
@@ -382,7 +382,12 @@ def run_calibration(objpoints, imgpoints, size, model, output_path):
         dist = np.zeros((4, 1), dtype=np.float64)
         rvecs = []
         tvecs = []
-        flags = cv2.fisheye.CALIB_USE_INTRINSIC_GUESS + cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC + cv2.fisheye.CALIB_FIX_SKEW
+        flags = (
+            cv2.fisheye.CALIB_USE_INTRINSIC_GUESS
+            + cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC
+            + cv2.fisheye.CALIB_FIX_SKEW
+            + cv2.fisheye.CALIB_FIX_PRINCIPAL_POINT
+        )
         
         ret, mtx, dist, rvecs, tvecs = cv2.fisheye.calibrate(
             objpoints_fe, imgpoints_fe, (W, H), mtx, dist, rvecs, tvecs, flags

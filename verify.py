@@ -187,6 +187,7 @@ def main():
             return
         H, W = test_frame.shape[:2]
         
+    cv2.resizeWindow(window_name, W, H // 2)
     cv2.setMouseCallback(window_name, on_mouse, {"width": W, "height": H})
     
     show_grid = True
